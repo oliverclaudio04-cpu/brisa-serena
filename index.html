@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Brisa Serena Home</title>
+
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+  <header>
+    <div class="logo">Brisa Serena <span>Home</span></div>
+
+    <nav>
+      <a href="#produtos">Produtos</a>
+      <a href="#beneficios">Benefícios</a>
+
+      <button class="admin-button" onclick="openCustomerAccount()">Minha conta</button>
+      <button class="admin-button" onclick="openAdmin()">Área admin</button>
+      <button class="cart-button" onclick="openCart()">Carrinho (<span id="cartCount">0</span>)</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-content">
+        <h1>Conforto elegante para suas noites.</h1>
+
+        <p>
+          Pijamas, homewear e peças femininas pensadas para unir conforto, delicadeza
+          e uma experiência de compra simples e segura.
+        </p>
+
+        <div class="hero-actions">
+          <a class="btn-primary" href="#produtos">Ver coleção</a>
+          <button class="btn-secondary" onclick="openCustomerAccount()">Minha conta</button>
+        </div>
+      </div>
+
+      <div class="hero-card">
+        <img
+          src="https://images.unsplash.com/photo-1612336307429-8a898d10e223?auto=format&fit=crop&w=900&q=80"
+          alt="Brisa Serena Home"
+        />
+      </div>
+    </section>
+
+    <section class="section" id="produtos">
+      <div class="section-title">
+        <div>
+          <h2>Produtos em destaque</h2>
+          <p>
+            A vitrine é pública. Apenas administradores conseguem adicionar,
+            editar ou excluir produtos. Clientes podem criar conta para acompanhar pedidos.
+          </p>
+        </div>
+      </div>
+
+      <div class="filters">
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="Buscar produto..."
+          oninput="renderProducts()"
+        />
+
+        <select id="categoryFilter" onchange="renderProducts()">
+          <option value="todos">Todas as categorias</option>
+          <option value="cetim">Cetim</option>
+          <option value="algodao">Algodão</option>
+          <option value="inverno">Inverno</option>
+          <option value="homewear">Homewear</option>
+        </select>
+      </div>
+
+      <div class="grid" id="productsGrid"></div>
+    </section>
+
+    <section class="section" id="beneficios">
+      <div class="section-title">
+        <div>
+          <h2>Compra simples e segura</h2>
+          <p>
+            Produtos no Supabase, área admin protegida, conta para clientes
+            e pagamento por função segura.
+          </p>
+        </div>
+      </div>
+
+      <div class="benefits">
+        <div class="benefit">
+          <h3>Área do cliente</h3>
+          <p>
+            O cliente cria conta, confirma o e-mail e consegue acompanhar
+            pedidos, prazo de entrega e rastreio.
+          </p>
+        </div>
+
+        <div class="benefit">
+          <h3>Admin protegido</h3>
+          <p>
+            O painel só libera edição se o usuário estiver cadastrado como
+            administrador no Supabase.
+          </p>
+        </div>
+
+        <div class="benefit">
+          <h3>Checkout vinculável</h3>
+          <p>
+            O pagamento pode ser conectado ao Mercado Pago, Stripe ou outro
+            gateway usando uma Edge Function.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="overlay" id="overlay" onclick="closePanels()"></div>
+
+  <!-- CARRINHO -->
+  <aside class="drawer" id="cartDrawer">
+    <div class="drawer-header">
+      <h2>Carrinho</h2>
+      <button class="close-btn" onclick="closePanels()">Fechar</button>
+    </div>
+
+    <div id="cartItems"></div>
+
+    <div class="cart-total" id="cartTotal">Total: R$ 0,00</div>
+
+    <div class="admin-form">
+      <h3>Dados para o pedido</h3>
+
+      <input
+        class="input"
+        id="customerName"
+        placeholder="Nome completo"
+      />
+
+      <input
+        class="input"
+        id="customerEmail"
+        type="email"
+        placeholder="E-mail"
+      />
+
+      <input
+        class="input"
+        id="customerPhone"
+        placeholder="WhatsApp"
+      />
+
+      <button class="checkout-btn" onclick="createOrderAndCheckout()">
+        Ir para pagamento
+      </button>
+    </div>
+
+    <div class="status-box">
+      Se o cliente estiver logado, o pedido será vinculado à conta dele.
+      Assim ele conseguirá acompanhar a compra pela área “Minha conta”.
+    </div>
+  </aside>
+
+  <!-- ÁREA DO CLIENTE -->
+  <aside class="drawer" id="customerPanel">
+    <div class="drawer-header">
+      <h2>Minha conta</h2>
+      <button class="close-btn" onclick="closePanels()">Fechar</button>
+    </div>
+
+    <div id="customerLoginArea">
+      <div class="status-box">
+        Crie uma conta ou entre para acompanhar seus pedidos, prazo de entrega
+        e código de rastreio. Depois de criar a conta, confirme seu e-mail.
+      </div>
+
+      <form class="admin-form">
+        <h3>Entrar ou criar conta</h3>
+
+        <input
+          class="input"
+          id="customerLoginEmail"
+          type="email"
+          placeholder="Seu e-mail"
+          required
+        />
+
+        <input
+          class="input"
+          id="customerLoginPassword"
+          type="password"
+          placeholder="Sua senha"
+          required
+        />
+
+        <button class="login-btn" type="button" onclick="loginCustomer(event)">
+          Entrar
+        </button>
+
+        <button class="edit-btn" type="button" onclick="registerCustomer(event)">
+          Criar conta
+        </button>
+      </form>
+    </div>
+
+    <div id="customerArea" class="hidden">
+      <div class="status-box">
+        <strong>Logado:</strong> <span id="customerEmailLabel"></span>
+      </div>
+
+      <button class="logout-btn" onclick="logoutCustomer()">
+        Sair da conta
+      </button>
+
+      <h3 class="small-title">Meus pedidos</h3>
+      <div id="myOrdersList"></div>
+    </div>
+  </aside>
+
+  <!-- ÁREA ADMIN -->
+  <aside class="drawer" id="adminPanel">
+    <div class="drawer-header">
+      <h2>Área admin</h2>
+      <button class="close-btn" onclick="closePanels()">Fechar</button>
+    </div>
+
+    <div id="loginArea">
+      <div class="status-box">
+        Entre com o e-mail cadastrado como administrador. Usuários comuns
+        conseguem fazer login, mas não conseguem editar a loja.
+      </div>
+
+      <form class="admin-form" onsubmit="loginAdmin(event)">
+        <h3>Login admin</h3>
+
+        <input
+          class="input"
+          id="adminEmail"
+          type="email"
+          placeholder="E-mail do admin"
+          required
+        />
+
+        <input
+          class="input"
+          id="adminPassword"
+          type="password"
+          placeholder="Senha"
+          required
+        />
+
+        <button class="login-btn" type="submit">
+          Entrar
+        </button>
+      </form>
+    </div>
+
+    <div id="adminArea" class="hidden">
+      <div class="status-box">
+        <strong>Logado:</strong> <span id="adminEmailLabel"></span><br />
+        <span id="adminPermissionLabel"></span>
+      </div>
+
+      <button class="logout-btn" onclick="logoutAdmin()">
+        Sair da conta
+      </button>
+
+      <form class="admin-form" onsubmit="saveProduct(event)">
+        <h3 id="formTitle">Adicionar produto</h3>
+
+        <input type="hidden" id="productId" />
+
+        <input
+          class="input"
+          id="productName"
+          type="text"
+          placeholder="Nome do produto"
+          required
+        />
+
+        <div class="form-grid">
+          <input
+            class="input"
+            id="productPrice"
+            type="number"
+            step="0.01"
+            placeholder="Preço"
+            required
+          />
+
+          <input
+            class="input"
+            id="productStock"
+            type="number"
+            placeholder="Estoque"
+            required
+          />
+        </div>
+
+        <input
+          class="input"
+          id="productImage"
+          type="url"
+          placeholder="Link da imagem"
+          required
+        />
+
+        <select id="productCategory" required>
+          <option value="cetim">Cetim</option>
+          <option value="algodao">Algodão</option>
+          <option value="inverno">Inverno</option>
+          <option value="homewear">Homewear</option>
+        </select>
+
+        <textarea
+          id="productDescription"
+          placeholder="Descrição do produto"
+          required
+        ></textarea>
+
+        <div class="form-grid">
+          <button class="save-btn" type="submit">
+            Salvar
+          </button>
+
+          <button class="edit-btn" type="button" onclick="clearForm()">
+            Limpar
+          </button>
+        </div>
+      </form>
+
+      <h3 class="small-title">Produtos cadastrados</h3>
+      <div id="adminProducts"></div>
+
+      <h3 class="small-title">Pedidos</h3>
+      <div id="ordersList"></div>
+    </div>
+  </aside>
+
+  <footer>
+    <div>
+      <strong>Brisa Serena Home</strong>
+      <p>Homewear feminino com conforto, elegância e delicadeza.</p>
+    </div>
+
+    <div>
+      <strong>Conta, pedidos e entrega</strong>
+      <p>Clientes acompanham compras, prazo estimado e rastreio pela área Minha conta.</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
